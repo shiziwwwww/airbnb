@@ -17,35 +17,48 @@ from streamlit.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt
+import seaborn as sns
+import streamlit as st
+st.title('My first app')
+st.write("Here's our first app with Streamlit")
+data = pd.read_csv("C:/Users/jingy/Desktop/M2.4/cph_airbnb_listings.csv")
+data.head()
+# Summary statistics for numerical attributes
+print("\nSummary statistics for numerical attributes:")
+print(data.select_dtypes(include=[np.number]).describe())
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+# Summary statistics for categorical attributes
+print("\nSummary statistics for categorical attributes:")
+print(data.select_dtypes(include=['object']).describe())
+# Display the first few rows of the dataset
+print(data.head())
+# Visualize the distribution of prices using a histogram
+plt.figure(figsize=(10, 6))
+sns.histplot(data['price'], bins=30, kde=True)
+plt.title('Distribution of Prices')
+plt.xlabel('Price')
+plt.ylabel('Frequency')
+plt.show()
+# Group the data by neighborhood and find the index of the minimum price in each neighborhood
+min_price_index = data.groupby('neighbourhood')['price'].idxmin()
 
-    st.write("# Welcome to Streamlit! 👋")
-
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+# Use the index to retrieve the corresponding name
+min_price_listings = data.loc[min_price_index, ['neighbourhood', 'name', 'price']]
 
 
-if __name__ == "__main__":
-    run()
+print(min_price_listings)
+
+merged_data = pd.merge(min_price_listings, data, on='name', how='inner')
+
+
+print(merged_data)
+price_min_nights_reviews = merged_data[['price_x', 'minimum_nights', 'number_of_reviews', 'reviews_per_month','number_of_reviews_ltm']]
+correlation_matrix = price_min_nights_reviews.corr()
+# 绘制热图，并标出数据值
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Heatmap of Price, Minimum Nights, and Reviews')
+plt.show()
+st.pyplot(plt)
