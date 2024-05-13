@@ -17,8 +17,6 @@ from streamlit.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
-!pip install matplotlib
-!pip install seaborn
 import numpy as np 
 import pandas as pd 
 import matplotlib as plt
